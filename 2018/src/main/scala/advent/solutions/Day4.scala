@@ -1,4 +1,4 @@
-package advent.day4
+package advent.solutions
 
 import advent.util.Util
 
