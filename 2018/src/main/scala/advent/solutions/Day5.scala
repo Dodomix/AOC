@@ -4,7 +4,7 @@ import advent.util.Util
 
 object Day5 {
 
-  def part1(input: Array[String]): Any = {
+  def part1(input: Array[String]): Int = {
     react(input(0)).length
   }
 
