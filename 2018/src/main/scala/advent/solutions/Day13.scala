@@ -28,7 +28,8 @@ object Day13 {
           else if (direction == '^') (i - 1, j)
           else (i + 1, j)
           val nextLocation = map(nextPosition)
-          if (updatedCarts.contains(nextPosition)) return (nextPosition._2, nextPosition._1)
+          if (updatedCarts.contains(nextPosition) || carts.contains(nextPosition) && direction != '<' && direction != '^')
+            return (nextPosition._2, nextPosition._1)
           else if (nextLocation == '+') {
             if (direction == '>') {
               if (intersections % 3 == 0) updatedCarts.updated(nextPosition, (intersections + 1, '^'))
@@ -65,8 +66,72 @@ object Day13 {
     (0, 0)
   }
 
-  def part2(lines: Array[String]): Any = {
-    0
+  def part2(lines: Array[String]): (Int, Int) = {
+    val (trackMap, cartPositions, _) = lines.foldLeft((Map[(Int, Int), Char]().withDefaultValue(' '),
+      TreeMap[(Int, Int), (Int, Char)](), 0))({
+      case ((map, carts, i), line) =>
+        val lineResult = line.foldLeft((map, carts, 0))({ case ((lineMap, lineCarts, j), char) =>
+          if (char == '>') (lineMap.updated((i, j), '-'), lineCarts.updated((i, j), (0, '>')), j + 1)
+          else if (char == '<') (lineMap.updated((i, j), '-'), lineCarts.updated((i, j), (0, '<')), j + 1)
+          else if (char == '^') (lineMap.updated((i, j), '|'), lineCarts.updated((i, j), (0, '^')), j + 1)
+          else if (char == 'v') (lineMap.updated((i, j), '|'), lineCarts.updated((i, j), (0, 'v')), j + 1)
+          else if (char == ' ') (lineMap, lineCarts, j + 1)
+          else (lineMap.updated((i, j), char), lineCarts, j + 1)
+        })
+        (lineResult._1, lineResult._2, i + 1)
+    })
+    Stream.continually().foldLeft((cartPositions, trackMap))({ case ((carts, map), _) =>
+      if (carts.size <= 1) {
+        return (carts.keys.head._2, carts.keys.head._1)
+      }
+      var crashes = List[(Int, Int)]()
+      val newCarts = carts.foldLeft(TreeMap[(Int, Int), (Int, Char)]())({
+        case (updatedCarts, ((i, j), (intersections, direction))) =>
+          val nextPosition = if (direction == '>') (i, j + 1)
+          else if (direction == '<') (i, j - 1)
+          else if (direction == '^') (i - 1, j)
+          else (i + 1, j)
+          val nextLocation = map(nextPosition)
+          if (crashes.contains((i, j)) || crashes.contains(nextPosition)) {
+            updatedCarts
+          } else if (updatedCarts.contains(nextPosition) || carts.contains(nextPosition) && direction != '<' && direction != '^') {
+            crashes :+= nextPosition
+            updatedCarts.filter(_._1 != nextPosition)
+          } else if (nextLocation == '+') {
+            if (direction == '>') {
+              if (intersections % 3 == 0) updatedCarts.updated(nextPosition, (intersections + 1, '^'))
+              else if (intersections % 3 == 1) updatedCarts.updated(nextPosition, (intersections + 1, '>'))
+              else updatedCarts.updated(nextPosition, (intersections + 1, 'v'))
+            } else if (direction == 'v') {
+              if (intersections % 3 == 0) updatedCarts.updated(nextPosition, (intersections + 1, '>'))
+              else if (intersections % 3 == 1) updatedCarts.updated(nextPosition, (intersections + 1, 'v'))
+              else updatedCarts.updated(nextPosition, (intersections + 1, '<'))
+            } else if (direction == '<') {
+              if (intersections % 3 == 0) updatedCarts.updated(nextPosition, (intersections + 1, 'v'))
+              else if (intersections % 3 == 1) updatedCarts.updated(nextPosition, (intersections + 1, '<'))
+              else updatedCarts.updated(nextPosition, (intersections + 1, '^'))
+            } else {
+              if (intersections % 3 == 0) updatedCarts.updated(nextPosition, (intersections + 1, '<'))
+              else if (intersections % 3 == 1) updatedCarts.updated(nextPosition, (intersections + 1, '^'))
+              else updatedCarts.updated(nextPosition, (intersections + 1, '>'))
+            }
+          } else if (nextLocation == '/') {
+            if (direction == '>') updatedCarts.updated(nextPosition, (intersections, '^'))
+            else if (direction == 'v') updatedCarts.updated(nextPosition, (intersections, '<'))
+            else if (direction == '<') updatedCarts.updated(nextPosition, (intersections, 'v'))
+            else updatedCarts.updated(nextPosition, (intersections, '>'))
+          } else if (nextLocation == '\\') {
+            if (direction == '>') updatedCarts.updated(nextPosition, (intersections, 'v'))
+            else if (direction == 'v') updatedCarts.updated(nextPosition, (intersections, '>'))
+            else if (direction == '<') updatedCarts.updated(nextPosition, (intersections, '^'))
+            else updatedCarts.updated(nextPosition, (intersections, '<'))
+          } else {
+            updatedCarts.updated(nextPosition, (intersections, direction))
+          }
+      })
+      (newCarts, map)
+    })
+    (0, 0)
   }
 
   def main(args: Array[String]): Unit = {
