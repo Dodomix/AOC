@@ -81,7 +81,7 @@ object Day13 {
         (lineResult._1, lineResult._2, i + 1)
     })
     Stream.continually().foldLeft((cartPositions, trackMap))({ case ((carts, map), _) =>
-      if (carts.size <= 1) {
+      if (carts.size == 1) {
         return (carts.keys.head._2, carts.keys.head._1)
       }
       var crashes = List[(Int, Int)]()
