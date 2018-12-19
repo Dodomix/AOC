@@ -2,46 +2,41 @@ package advent.solutions
 
 import advent.util.Util
 
-object Day16 {
+import scala.collection.immutable.TreeMap
+
+object Day19 {
 
   class MapUnit(var unitType: Char, var hp: Int, var damage: Int, var i: Int, var j: Int)
 
   def part1(lines: Array[String]): Int = {
-    val operations = List("addr", "addi", "mulr", "muli", "banr", "bani", "borr", "bori", "setr",
-      "seti", "gtir", "gtri", "gtrr", "eqir", "eqri", "eqrr")
-    (lines :+ "").foldLeft((Array[Int](), Array[Int](), Array[Int](), 0))({
-      case ((before, op, after, count), line) =>
-        if (line.startsWith("Before:")) {
-          (line.split("Before: *\\[")(1).dropRight(1).split(", ").map(_.toInt), op, after, count)
-        } else if (line.startsWith("After:")) {
-          (before, op, line.split("After: *\\[")(1).dropRight(1).split(", ").map(_.toInt), count)
-        } else if (!line.isEmpty) {
-          (before, line.split(" ").map(_.toInt), after, count)
-        } else {
-          (before, op, after, if (operations.foldLeft(0)((count, operation) => {
-            if (runInstruction(operation, op(1), op(2), op(3), asMap(before)).equals(asMap(after))) count + 1
-            else count
-          }) >= 3) count + 1
-          else count)
-        }
-    })._4
+    val (instructions, ip) = lines.foldLeft((List[(String, Int, Int, Int)](), 0))((acc, line) => {
+      val split = line.split(" ")
+      if (split(0) == "#ip") (acc._1, split(1).toInt)
+      else ((acc._1) :+ (split(0), split(1).toInt, split(2).toInt, split(3).toInt), acc._2)
+    })
+    Stream.continually().foldLeft(Map[Int, Int]().withDefaultValue(0))((registers, _) => {
+      if (registers(ip) >= instructions.size) return registers(0)
+      val instruction = instructions(registers(ip))
+      val updatedRegisters = runInstruction(instruction._1, instruction._2, instruction._3, instruction._4, registers)
+      updatedRegisters.updated(ip, updatedRegisters(ip) + 1)
+    })
+    0
   }
 
   def part2(lines: Array[String]): Int = {
-    val operations = Map((3, "eqir"), (7, "gtrr"), (8, "eqrr"), (6, "eqri"),
-      (11, "gtri"), (10, "gtir"), (13, "bani"), (5, "setr"),
-      (2, "banr"), (4, "muli"), (14, "seti"), (0, "mulr"),
-      (1, "addr"), (15, "bori"), (12, "borr"), (9, "addi"))
-    lines.map(line => {
+    val (instructions, ip) = lines.foldLeft((List[(String, Int, Int, Int)](), 0))((acc, line) => {
       val split = line.split(" ")
-      (split(0).toInt, split(1).toInt, split(2).toInt, split(3).toInt)
-    }).foldLeft(Map[Int, Int]().withDefaultValue(0))({
-      case (registers, (opCode, a, b, c)) => runInstruction(operations(opCode), a, b, c, registers)
-    })(0)
-  }
-
-  def asMap(arr: Array[Int]): Map[Int, Int] = {
-    arr.zipWithIndex.foldLeft(Map[Int, Int]())((map, zipped) => map.updated(zipped._2, zipped._1))
+      if (split(0) == "#ip") (acc._1, split(1).toInt)
+      else ((acc._1) :+ (split(0), split(1).toInt, split(2).toInt, split(3).toInt), acc._2)
+    })
+    Stream.continually().foldLeft(TreeMap[Int, Int]((0, 1)).withDefaultValue(0))((registers, _) => {
+      if (registers(ip) >= instructions.size) return registers(0)
+      val instruction = instructions(registers(ip))
+      println(instruction) // sum of factors of 10551296
+      val updatedRegisters = runInstruction(instruction._1, instruction._2, instruction._3, instruction._4, registers)
+      updatedRegisters.updated(ip, updatedRegisters(ip) + 1)
+    })
+    0
   }
 
   def runInstruction(op_code: String, a: Int, b: Int, c: Int, registers: Map[Int, Int]): Map[Int, Int] = {
