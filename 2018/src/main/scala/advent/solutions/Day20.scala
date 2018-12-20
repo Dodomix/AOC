@@ -41,46 +41,36 @@ object Day20 {
     (0, "")
   }
 
-  def findAllPathLengths(line: String, previousPaths: List[Int]): (Int, List[Int], Int) = {
-    Stream.continually().foldLeft((0, List(0), List[Int](), 0))({
-      case ((i, currentPaths, paths, largePathsCount), _) =>
-        val char = line(i)
-        if (char == '|') (i + 1, List(0), paths ++ currentPaths, largePathsCount)
-        else if (char == ')') return (i + 2, paths ++ currentPaths, largePathsCount)
-        else if (char != '(') {
-          val updatedPaths = currentPaths.map(_ + 1)
-          val fullPaths = previousPaths.foldLeft(List[Int]())((acc, path) => acc ++ updatedPaths.map(_ + path))
-          (i + 1, updatedPaths, paths, largePathsCount + fullPaths.count(_ >= 1000))
+  def findAllPathLengths(line: String): Int = {
+    line.foldLeft((Map[(Int, Int), Int](((0, 0), 0)).withDefaultValue(Int.MaxValue), List[(Int, Int)](), (0, 0)))({
+      case ((distances, stack, (x, y)), c) =>
+        if (c == 'N') {
+          val newLocation = (x, y - 1)
+          (distances.updated(newLocation, Math.min(distances(newLocation), distances((x, y)) + 1)), stack, newLocation)
+        } else if (c == 'W') {
+          val newLocation = (x - 1, y)
+          (distances.updated(newLocation, Math.min(distances(newLocation), distances((x, y)) + 1)), stack, newLocation)
+        } else if (c == 'E') {
+          val newLocation = (x + 1, y)
+          (distances.updated(newLocation, Math.min(distances(newLocation), distances((x, y)) + 1)), stack, newLocation)
+        } else if (c == 'S') {
+          val newLocation = (x, y + 1)
+          (distances.updated(newLocation, Math.min(distances(newLocation), distances((x, y)) + 1)), stack, newLocation)
+        } else if (c == '|') {
+          (distances, stack, stack.head)
+        } else if (c == '(') {
+          (distances, (x, y) +: stack, (x, y))
+        } else if (c == ')') {
+          (distances, stack.tail, stack.head)
         } else {
-          val (newI, newPaths, childLargePathsCount) = findAllPathLengths(line.substring(i + 1),
-            currentPaths.foldLeft(List[Int]())((acc, path) => acc ++ previousPaths.map(_ + path)))
-          val updatedPaths = newPaths.filter(_ != 0).foldLeft(List[Int]())((acc, path) => acc ++ currentPaths.map(_ + path))
-          if (newPaths.contains(0)) {
-            (i + newI, currentPaths, paths, largePathsCount + childLargePathsCount)
-          } else {
-            (i + newI, updatedPaths, paths, largePathsCount + childLargePathsCount)
-          }
+          (distances, stack, (x, y))
         }
-    })
-    (0, List[Int](), 0)
+    })._1.count(_._2 >= 1000)
   }
 
   def part2(lines: Array[String]): Int = {
     val line = lines(0).drop(1).dropRight(1)
-    Stream.continually().foldLeft((0, List(0)))({
-      case ((i, paths), _) =>
-        if (i >= line.length) {
-          return paths.count(_ >= 1000)
-        }
-        val char = line(i)
-        if (char != '(') (i + 1, paths.map(_ + 1))
-        else {
-          val (newI, newPaths, count) = findAllPathLengths(line.substring(i + 1), paths)
-          println(count)
-          (i + newI, newPaths.foldLeft(List[Int]())((acc, path) => acc ++ paths.map(_ + path)))
-        }
-    })
-    0
+    findAllPathLengths(line)
   }
 
   def main(args: Array[String]): Unit = {
