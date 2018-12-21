@@ -4,8 +4,6 @@ import advent.util.Util
 
 object Day17 {
 
-  class MapUnit(var unitType: Char, var hp: Int, var damage: Int, var i: Int, var j: Int)
-
   def part1(lines: Array[String]): Int = {
     val result = run(lines)
     result._1.count(position => position._2 >= result._3 && position._2 < result._4)

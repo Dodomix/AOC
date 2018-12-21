@@ -4,7 +4,7 @@ import advent.util.Util
 
 import scala.collection.immutable.TreeMap
 
-object Day19 {
+object Day21 {
 
   def part1(lines: Array[String]): Int = {
     val (instructions, ip) = lines.foldLeft((List[(String, Int, Int, Int)](), 0))((acc, line) => {
@@ -12,9 +12,12 @@ object Day19 {
       if (split(0) == "#ip") (acc._1, split(1).toInt)
       else ((acc._1) :+ (split(0), split(1).toInt, split(2).toInt, split(3).toInt), acc._2)
     })
-    Stream.continually().foldLeft(Map[Int, Int]().withDefaultValue(0))((registers, _) => {
-      if (registers(ip) >= instructions.size) return registers(0)
+    Stream.continually().foldLeft(Map[Int, Int]((0, 1797184)).withDefaultValue(0))((registers, _) => {
+      if (registers(ip) >= instructions.size) return registers(1)
       val instruction = instructions(registers(ip))
+      if (registers(ip) == 28) {
+        return registers(1)
+      }
       val updatedRegisters = runInstruction(instruction._1, instruction._2, instruction._3, instruction._4, registers)
       updatedRegisters.updated(ip, updatedRegisters(ip) + 1)
     })
@@ -27,12 +30,19 @@ object Day19 {
       if (split(0) == "#ip") (acc._1, split(1).toInt)
       else ((acc._1) :+ (split(0), split(1).toInt, split(2).toInt, split(3).toInt), acc._2)
     })
-    Stream.continually().foldLeft(TreeMap[Int, Int]((0, 1)).withDefaultValue(0))((registers, _) => {
-      if (registers(ip) >= instructions.size) return registers(0)
-      val instruction = instructions(registers(ip))
-      println(instruction) // sum of factors of 10551296
-      val updatedRegisters = runInstruction(instruction._1, instruction._2, instruction._3, instruction._4, registers)
-      updatedRegisters.updated(ip, updatedRegisters(ip) + 1)
+    Stream.continually().foldLeft((Map[Int, Int]((0, 11011493)).withDefaultValue(0), Set[Int](), 0))({
+      case ((registers, previousValues, previousValue), _) =>
+        if (registers(ip) >= instructions.size) return registers(1)
+        val instruction = instructions(registers(ip))
+        val updatedRegisters = runInstruction(instruction._1, instruction._2, instruction._3, instruction._4, registers)
+        if (registers(ip) == 28) {
+          if (previousValues.contains(registers(1))) { // find first repeated and return the previous one
+            return previousValue
+          }
+          (updatedRegisters.updated(ip, updatedRegisters(ip) + 1), previousValues + registers(1), registers(1))
+        } else {
+          (updatedRegisters.updated(ip, updatedRegisters(ip) + 1), previousValues, previousValue)
+        }
     })
     0
   }

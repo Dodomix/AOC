@@ -4,8 +4,6 @@ import advent.util.Util
 
 object Day16 {
 
-  class MapUnit(var unitType: Char, var hp: Int, var damage: Int, var i: Int, var j: Int)
-
   def part1(lines: Array[String]): Int = {
     val operations = List("addr", "addi", "mulr", "muli", "banr", "bani", "borr", "bori", "setr",
       "seti", "gtir", "gtri", "gtrr", "eqir", "eqri", "eqrr")

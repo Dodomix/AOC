@@ -6,8 +6,6 @@ import scala.collection.immutable.TreeMap
 
 object Day20 {
 
-  class MapUnit(var unitType: Char, var hp: Int, var damage: Int, var i: Int, var j: Int)
-
   def part1(lines: Array[String]): Int = {
     val line = lines(0).drop(1).dropRight(1)
     Stream.continually().foldLeft((0, 0))({

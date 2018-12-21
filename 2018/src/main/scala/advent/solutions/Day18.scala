@@ -4,8 +4,6 @@ import advent.util.Util
 
 object Day18 {
 
-  class MapUnit(var unitType: Char, var hp: Int, var damage: Int, var i: Int, var j: Int)
-
   def part1(lines: Array[String]): Int = {
     val (areaMap, size) = lines.foldLeft((Map[(Int, Int), Char]().withDefaultValue('.'), 0))({
       case ((map, i), line) =>
