@@ -33,8 +33,8 @@ object Day22 {
     val targetX = target(0).toInt
     val targetY = target(1).toInt
 
-    val map = Range(0, targetX + 1000).foldLeft(Map[(Int, Int), Long]())((map, x) => {
-      Range(0, targetY + 1000).foldLeft(map)((map, y) => {
+    val map = Range(0, targetX + 50).foldLeft(Map[(Int, Int), Long]())((map, x) => {
+      Range(0, targetY + 50).foldLeft(map)((map, y) => {
         if (x == 0 && y == 0) map.updated((x, y), 0)
         else if (x == targetX && y == targetY) map.updated((x, y), 0)
         else if (y == 0) map.updated((x, y), (x * 16807 + depth) % 20183)
