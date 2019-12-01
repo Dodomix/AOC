@@ -6,8 +6,8 @@ object Util {
     fun readFileLines(file: String): List<String> {
         return Util.javaClass.classLoader.getResource("inputs/$file")
             ?.readText()
+            ?.trimIndent()
             ?.lines()
-            ?.dropLastWhile { it.isEmpty() }
             ?: throw FileNotFoundException("Cannot find file $file in inputs")
     }
 }
