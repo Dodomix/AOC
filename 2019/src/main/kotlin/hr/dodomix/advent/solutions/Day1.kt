@@ -21,5 +21,4 @@ class Day1 {
         .map { it.toInt() }
         .map { calculateFuel(it) }
         .sum()
-
 }
