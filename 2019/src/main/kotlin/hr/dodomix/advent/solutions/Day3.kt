@@ -8,45 +8,27 @@ class Day3 {
     fun part1(input: List<String>): Int {
         val locations = mutableSetOf<Pair<Int, Int>>()
         val wire1 = input[0].split(",")
-        wire1.fold(Pair(0, 0)) { currentLocation, wirePath ->
+        wire1.fold(Triple(0, 0, 0)) { currentLocation, wirePath ->
             val direction = wirePath[0]
             val length = wirePath.substring(1).toInt()
-            var newLocation = currentLocation
-            for (i in 0 until length) {
-                newLocation = when (direction) {
-                    'R' -> Pair(newLocation.first + 1, newLocation.second)
-                    'U' -> Pair(newLocation.first, newLocation.second + 1)
-                    'D' -> Pair(newLocation.first, newLocation.second - 1)
-                    'L' -> Pair(newLocation.first - 1, newLocation.second)
-                    else -> {
-                        throw RuntimeException("Invalid direction")
-                    }
-                }
-                locations.add(newLocation)
+            (0 until length).fold(currentLocation) { oldLocation, _ ->
+                val location = calculateNewLocation(oldLocation, direction)
+                locations.add(Pair(location.first, location.second))
+                location
             }
-            newLocation
         }
         val crossings = mutableListOf<Int>()
         val wire2 = input[1].split(",")
-        wire2.fold(Pair(0, 0)) { currentLocation, wirePath ->
+        wire2.fold(Triple(0, 0, 0)) { currentLocation, wirePath ->
             val direction = wirePath[0]
             val length = wirePath.substring(1).toInt()
-            var newLocation = currentLocation
-            for (i in 0 until length) {
-                newLocation = when (direction) {
-                    'R' -> Pair(newLocation.first + 1, newLocation.second)
-                    'U' -> Pair(newLocation.first, newLocation.second + 1)
-                    'D' -> Pair(newLocation.first, newLocation.second - 1)
-                    'L' -> Pair(newLocation.first - 1, newLocation.second)
-                    else -> {
-                        throw RuntimeException("Invalid direction")
-                    }
+            (0 until length).fold(currentLocation) { oldLocation, _ ->
+                val location = calculateNewLocation(oldLocation, direction)
+                if (locations.contains(Pair(location.first, location.second))) {
+                    crossings.add(abs(location.first) + abs(location.second))
                 }
-                if (locations.contains(newLocation)) {
-                    crossings.add(abs(newLocation.first) + abs(newLocation.second))
-                }
+                location
             }
-            newLocation
         }
         return crossings.min() ?: 0
     }
@@ -57,44 +39,36 @@ class Day3 {
         wire1.fold(Triple(0, 0, 0)) { currentLocation, wirePath ->
             val direction = wirePath[0]
             val length = wirePath.substring(1).toInt()
-            var newLocation = currentLocation
-            for (i in 0 until length) {
-                newLocation = when (direction) {
-                    'R' -> Triple(newLocation.first + 1, newLocation.second, newLocation.third + 1)
-                    'U' -> Triple(newLocation.first, newLocation.second + 1, newLocation.third + 1)
-                    'D' -> Triple(newLocation.first, newLocation.second - 1, newLocation.third + 1)
-                    'L' -> Triple(newLocation.first - 1, newLocation.second, newLocation.third + 1)
-                    else -> {
-                        throw RuntimeException("Invalid direction")
-                    }
-                }
-                locations.putIfAbsent(Pair(newLocation.first, newLocation.second), newLocation.third)
+            (0 until length).fold(currentLocation) { oldLocation, _ ->
+                val location = calculateNewLocation(oldLocation, direction)
+                locations.putIfAbsent(Pair(location.first, location.second), location.third)
+                location
             }
-            newLocation
         }
         val crossings = mutableListOf<Int>()
         val wire2 = input[1].split(",")
         wire2.fold(Triple(0, 0, 0)) { currentLocation, wirePath ->
             val direction = wirePath[0]
             val length = wirePath.substring(1).toInt()
-            var newLocation = currentLocation
-            for (i in 0 until length) {
-                newLocation = when (direction) {
-                    'R' -> Triple(newLocation.first + 1, newLocation.second, newLocation.third + 1)
-                    'U' -> Triple(newLocation.first, newLocation.second + 1, newLocation.third + 1)
-                    'D' -> Triple(newLocation.first, newLocation.second - 1, newLocation.third + 1)
-                    'L' -> Triple(newLocation.first - 1, newLocation.second, newLocation.third + 1)
-                    else -> {
-                        throw RuntimeException("Invalid direction")
-                    }
-                }
-                val locationKey = Pair(newLocation.first, newLocation.second)
+            (0 until length).fold(currentLocation) { oldLocation, _ ->
+                val location = calculateNewLocation(oldLocation, direction)
+                val locationKey = Pair(location.first, location.second)
                 if (locations.containsKey(locationKey)) {
-                    crossings.add(newLocation.third + locations.getValue(locationKey))
+                    crossings.add(location.third + locations.getValue(locationKey))
                 }
+                location
             }
-            newLocation
         }
         return crossings.min() ?: 0
+    }
+
+    private fun calculateNewLocation(location: Triple<Int, Int, Int>, direction: Char): Triple<Int, Int, Int> = when (direction) {
+        'R' -> Triple(location.first + 1, location.second, location.third + 1)
+        'U' -> Triple(location.first, location.second + 1, location.third + 1)
+        'D' -> Triple(location.first, location.second - 1, location.third + 1)
+        'L' -> Triple(location.first - 1, location.second, location.third + 1)
+        else -> {
+            throw RuntimeException("Invalid direction")
+        }
     }
 }
