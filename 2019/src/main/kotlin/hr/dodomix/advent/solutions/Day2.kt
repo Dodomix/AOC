@@ -9,8 +9,6 @@ class Day2 {
     fun part1(input: List<String>): Int =
         runProgram(constructMemory(input)).getValue(0)
 
-
-
     fun part2(input: List<String>): Int {
         for (i in 0..100) {
             for (j in 0..100) {
