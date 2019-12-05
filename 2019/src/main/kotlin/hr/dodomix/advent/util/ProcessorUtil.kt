@@ -14,27 +14,109 @@ object ProcessorUtil {
     fun runProgram(memory: MutableMap<Int, Int>): MutableMap<Int, Int> {
         var operationPointer = 0
         while (true) {
-            when (memory.getValue(operationPointer)) {
+            val value = memory.getValue(operationPointer)
+            val modes = (value / 100).toString()
+            when (value % 100) {
                 1 -> {
-                    val indices = read3(memory, operationPointer)
-                    memory[indices.third] = memory.getValue(indices.first) + memory.getValue(indices.second)
+                    operate3(memory, modes, operationPointer) { value1, value2 -> value1 + value2 }
                     operationPointer += 4
                 }
                 2 -> {
-                    val indices = read3(memory, operationPointer)
-                    memory[indices.third] = memory.getValue(indices.first) * memory.getValue(indices.second)
+                    operate3(memory, modes, operationPointer) { value1, value2 -> value1 * value2 }
+                    operationPointer += 4
+                }
+                3 -> {
+                    println("Please input a value:")
+                    val readValue = readLine()!!.toInt()
+                    memory[read1(memory, operationPointer)] = readValue
+                    operationPointer += 2
+                }
+                4 -> {
+                    val currentModes = processModes(modes, 1)
+                    println(readValue(memory, currentModes[0], read1(memory, operationPointer)))
+                    operationPointer += 2
+                }
+                5 -> {
+                    operationPointer = jumpIf(memory, modes, operationPointer) { it != 0 }
+                }
+                6 -> {
+                    operationPointer = jumpIf(memory, modes, operationPointer) { it == 0 }
+                }
+                7 -> {
+                    operate3(memory, modes, operationPointer) { value1, value2 -> if (value1 < value2) 1 else 0 }
+                    operationPointer += 4
+                }
+                8 -> {
+                    operate3(memory, modes, operationPointer) { value1, value2 -> if (value1 == value2) 1 else 0 }
                     operationPointer += 4
                 }
                 99 -> return memory
                 else -> {
-                    throw RuntimeException("Invalid code")
+                    throw RuntimeException("Invalid code ${value % 100}")
                 }
             }
         }
     }
 
+    private fun processModes(modes: String, valueCount: Int): String {
+        var newModes = modes
+        for (i in 0 until valueCount) {
+            if (modes.length <= i) {
+                newModes = "0$newModes"
+            }
+        }
+        return newModes.reversed()
+    }
+
+    private fun read1(memory: MutableMap<Int, Int>, currentIndex: Int) =
+        memory.getValue(currentIndex + 1)
+
+    private fun read2(memory: MutableMap<Int, Int>, currentIndex: Int) =
+        Pair(
+            memory.getValue(currentIndex + 1),
+            memory.getValue(currentIndex + 2)
+        )
+
     private fun read3(memory: MutableMap<Int, Int>, currentIndex: Int) =
-        Triple(memory.getValue(currentIndex + 1),
+        Triple(
+            memory.getValue(currentIndex + 1),
             memory.getValue(currentIndex + 2),
-            memory.getValue(currentIndex + 3))
+            memory.getValue(currentIndex + 3)
+        )
+
+    private fun readValue(memory: MutableMap<Int, Int>, mode: Char, value: Int): Int = if (mode == '0') {
+        memory.getValue(value)
+    } else {
+        value
+    }
+
+    private fun operate3(
+        memory: MutableMap<Int, Int>,
+        modes: String,
+        operationPointer: Int,
+        operation: (firstValue: Int, secondValue: Int) -> Int
+    ) {
+        val currentModes = processModes(modes, 3)
+        val values = read3(memory, operationPointer)
+        memory[values.third] = operation(
+            readValue(memory, currentModes[0], values.first),
+            readValue(memory, currentModes[1], values.second)
+        )
+    }
+
+    private fun jumpIf(
+        memory: MutableMap<Int, Int>,
+        modes: String,
+        operationPointer: Int,
+        condition: (firstValue: Int) -> Boolean
+    ): Int {
+        val currentModes = processModes(modes, 3)
+        val values = read2(memory, operationPointer)
+        val firstValue = readValue(memory, currentModes[0], values.first)
+        return if (condition(firstValue)) {
+            readValue(memory, currentModes[1], values.second)
+        } else {
+            operationPointer + 3
+        }
+    }
 }
