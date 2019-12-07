@@ -11,8 +11,14 @@ object ProcessorUtil {
             }
 
 
-    fun runProgram(memory: MutableMap<Int, Int>): MutableMap<Int, Int> {
-        var operationPointer = 0
+    fun runProgram(
+        memory: MutableMap<Int, Int>,
+        input: List<Int> = emptyList(),
+        output: MutableList<Int> = mutableListOf(),
+        waitForInput: Boolean = false
+    ): MutableMap<Int, Int> {
+        var operationPointer = memory.getOrDefault(-1, 0)
+        var inputIndex = 0
         while (true) {
             val value = memory.getValue(operationPointer)
             val modes = (value / 100).toString()
@@ -27,13 +33,19 @@ object ProcessorUtil {
                 }
                 3 -> {
                     println("Please input a value:")
-                    val readValue = readLine()!!.toInt()
+                    if (waitForInput && inputIndex == input.size) {
+                        memory[-1] = operationPointer
+                        return memory
+                    }
+                    val readValue = input.getOrElse(inputIndex++) { readLine()!!.toInt() }
                     memory[read1(memory, operationPointer)] = readValue
                     operationPointer += 2
                 }
                 4 -> {
                     val currentModes = processModes(modes, 1)
-                    println(readValue(memory, currentModes[0], read1(memory, operationPointer)))
+                    val result = readValue(memory, currentModes[0], read1(memory, operationPointer))
+                    output.add(result)
+                    println(result)
                     operationPointer += 2
                 }
                 5 -> {
@@ -50,13 +62,18 @@ object ProcessorUtil {
                     operate3(memory, modes, operationPointer) { value1, value2 -> if (value1 == value2) 1 else 0 }
                     operationPointer += 4
                 }
-                99 -> return memory
+                99 -> {
+                    memory[-1] = -1 // denotes program exited fully
+                    return memory
+                }
                 else -> {
-                    throw RuntimeException("Invalid code ${value % 100}")
+                    throw RuntimeException("Invalid code ${value % 100} at $operationPointer")
                 }
             }
         }
     }
+
+    fun hasProgramFinished(memory: MutableMap<Int, Int>) = memory[-1] == -1
 
     private fun processModes(modes: String, valueCount: Int): String {
         var newModes = modes
