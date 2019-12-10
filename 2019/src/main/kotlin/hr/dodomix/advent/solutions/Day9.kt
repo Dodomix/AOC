@@ -11,7 +11,7 @@ class Day9 {
         runProgram(constructMemory(input))
     }
 
-    fun part2(input: List<String>): Int {
-        return 0
+    fun part2(input: List<String>) {
+        runProgram(constructMemory(input))
     }
 }

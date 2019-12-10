@@ -1,16 +1,23 @@
 package hr.dodomix.advent.util
 
 import java.math.BigInteger
-import java.math.BigInteger.*
+import java.math.BigInteger.valueOf
 
 object ProcessorUtil {
+    private val NEGATIVE_ONE = valueOf(-1)
+    private val ZERO = BigInteger.ZERO
+    private val ONE = BigInteger.ONE
+    private val TWO = valueOf(2)
+    private val THREE = valueOf(3)
+    private val FOUR = valueOf(4)
+
     fun constructMemory(input: List<String>): MutableMap<BigInteger, BigInteger> =
         input[0]
             .split(",")
             .map { BigInteger(it) }
-            .foldRightIndexed(mutableMapOf()) { index, s, acc ->
-                acc[valueOf(index.toLong())] = s
-                acc
+            .foldIndexed(mutableMapOf<BigInteger, BigInteger>().withDefault { ZERO }) { index, memory, s ->
+                memory[valueOf(index.toLong())] = s
+                memory
             }
 
     fun runProgram(
@@ -19,38 +26,38 @@ object ProcessorUtil {
         output: MutableList<BigInteger> = mutableListOf(),
         waitForInput: Boolean = false
     ): MutableMap<BigInteger, BigInteger> {
-        var operationPointer = memory.getOrDefault(valueOf(-1), ZERO)
+        var operationPointer = memory.getValue(NEGATIVE_ONE)
         var inputIndex = 0
         var relativeBase = ZERO
         while (true) {
-            val value = memory.getOrDefault(operationPointer, ZERO).toInt()
+            val value = memory.getValue(operationPointer).toInt()
             val modes = (value / 100).toString()
             when (value % 100) {
                 1 -> {
                     operate3(memory, modes, operationPointer, relativeBase) { value1, value2 -> value1 + value2 }
-                    operationPointer += valueOf(4)
+                    operationPointer += FOUR
                 }
                 2 -> {
                     operate3(memory, modes, operationPointer, relativeBase) { value1, value2 -> value1 * value2 }
-                    operationPointer += valueOf(4)
+                    operationPointer += FOUR
                 }
                 3 -> {
                     println("Please input a value:")
                     if (waitForInput && inputIndex == input.size) {
-                        memory[valueOf(-1)] = valueOf(operationPointer.toLong())
+                        memory[NEGATIVE_ONE] = valueOf(operationPointer.toLong())
                         return memory
                     }
                     val valueRead = input.getOrElse(inputIndex++) { BigInteger(readLine()!!) }
                     val currentModes = processModes(modes, 1)
                     memory[getPosition(currentModes[0], read1(memory, operationPointer), relativeBase)] = valueRead
-                    operationPointer += valueOf(2)
+                    operationPointer += TWO
                 }
                 4 -> {
                     val currentModes = processModes(modes, 1)
                     val result = readValue(memory, currentModes[0], read1(memory, operationPointer), relativeBase)
                     output.add(result)
                     println(result)
-                    operationPointer += valueOf(2)
+                    operationPointer += TWO
                 }
                 5 -> {
                     operationPointer = jumpIf(memory, modes, operationPointer, relativeBase) { it != ZERO }
@@ -65,7 +72,7 @@ object ProcessorUtil {
                         operationPointer,
                         relativeBase
                     ) { value1, value2 -> if (value1 < value2) ONE else ZERO }
-                    operationPointer += valueOf(4)
+                    operationPointer += FOUR
                 }
                 8 -> {
                     operate3(
@@ -74,16 +81,16 @@ object ProcessorUtil {
                         operationPointer,
                         relativeBase
                     ) { value1, value2 -> if (value1 == value2) ONE else ZERO }
-                    operationPointer += valueOf(4)
+                    operationPointer += FOUR
                 }
                 9 -> {
                     val currentModes = processModes(modes, 1)
                     relativeBase +=
                         readValue(memory, currentModes[0], read1(memory, operationPointer), relativeBase)
-                    operationPointer += valueOf(2)
+                    operationPointer += TWO
                 }
                 99 -> {
-                    memory[valueOf(-1)] = valueOf(-1) // denotes program exited fully
+                    memory[NEGATIVE_ONE] = NEGATIVE_ONE // denotes program exited fully
                     return memory
                 }
                 else -> {
@@ -93,7 +100,7 @@ object ProcessorUtil {
         }
     }
 
-    fun hasProgramFinished(memory: MutableMap<BigInteger, BigInteger>) = memory[valueOf(-1)] == valueOf(-1)
+    fun hasProgramFinished(memory: MutableMap<BigInteger, BigInteger>) = memory[NEGATIVE_ONE] == NEGATIVE_ONE
 
     private fun processModes(modes: String, valueCount: Int): String {
         var newModes = modes
@@ -106,19 +113,19 @@ object ProcessorUtil {
     }
 
     private fun read1(memory: MutableMap<BigInteger, BigInteger>, currentIndex: BigInteger) =
-        memory.getOrDefault(currentIndex + valueOf(1), ZERO)
+        memory.getValue(currentIndex + ONE)
 
     private fun read2(memory: MutableMap<BigInteger, BigInteger>, currentIndex: BigInteger) =
         Pair(
-            memory.getOrDefault(currentIndex + valueOf(1), ZERO),
-            memory.getOrDefault(currentIndex + valueOf(2), ZERO)
+            memory.getValue(currentIndex + ONE),
+            memory.getValue(currentIndex + TWO)
         )
 
     private fun read3(memory: MutableMap<BigInteger, BigInteger>, currentIndex: BigInteger) =
         Triple(
-            memory.getOrDefault(currentIndex + valueOf(1), ZERO),
-            memory.getOrDefault(currentIndex + valueOf(2), ZERO),
-            memory.getOrDefault(currentIndex + valueOf(3), ZERO)
+            memory.getValue(currentIndex + ONE),
+            memory.getValue(currentIndex + TWO),
+            memory.getValue(currentIndex + THREE)
         )
 
     private fun readValue(
@@ -127,9 +134,9 @@ object ProcessorUtil {
         value: BigInteger,
         relativeBase: BigInteger
     ): BigInteger = when (mode) {
-        '0' -> memory.getOrDefault(value, ZERO)
+        '0' -> memory.getValue(value)
         '1' -> value
-        else -> memory.getOrDefault(relativeBase + value, ZERO)
+        else -> memory.getValue(relativeBase + value)
     }
 
     private fun operate3(
@@ -160,7 +167,7 @@ object ProcessorUtil {
         return if (condition(firstValue)) {
             readValue(memory, currentModes[1], values.second, relativeBase)
         } else {
-            operationPointer + valueOf(3)
+            operationPointer + THREE
         }
     }
 
