@@ -4,12 +4,13 @@ import java.math.BigInteger
 import java.math.BigInteger.valueOf
 
 object ProcessorUtil {
-    private val NEGATIVE_ONE = valueOf(-1)
     private val ZERO = BigInteger.ZERO
     private val ONE = BigInteger.ONE
     private val TWO = valueOf(2)
     private val THREE = valueOf(3)
     private val FOUR = valueOf(4)
+    private val OPERATION_POINTER_LOCATION = valueOf(Long.MIN_VALUE) - ONE
+    private val RELATIVE_POINTER_LOCATION = valueOf(Long.MAX_VALUE) + ONE
 
     fun constructMemory(input: List<String>): MutableMap<BigInteger, BigInteger> =
         input[0]
@@ -26,9 +27,9 @@ object ProcessorUtil {
         output: MutableList<BigInteger> = mutableListOf(),
         waitForInput: Boolean = false
     ): MutableMap<BigInteger, BigInteger> {
-        var operationPointer = memory.getValue(NEGATIVE_ONE)
+        var operationPointer = memory.getValue(OPERATION_POINTER_LOCATION)
         var inputIndex = 0
-        var relativeBase = ZERO
+        var relativeBase = memory.getValue(RELATIVE_POINTER_LOCATION)
         while (true) {
             val value = memory.getValue(operationPointer).toInt()
             val modes = (value / 100).toString()
@@ -44,7 +45,8 @@ object ProcessorUtil {
                 3 -> {
                     println("Please input a value:")
                     if (waitForInput && inputIndex == input.size) {
-                        memory[NEGATIVE_ONE] = valueOf(operationPointer.toLong())
+                        memory[OPERATION_POINTER_LOCATION] = valueOf(operationPointer.toLong())
+                        memory[RELATIVE_POINTER_LOCATION] = relativeBase
                         return memory
                     }
                     val valueRead = input.getOrElse(inputIndex++) { BigInteger(readLine()!!) }
@@ -90,7 +92,7 @@ object ProcessorUtil {
                     operationPointer += TWO
                 }
                 99 -> {
-                    memory[NEGATIVE_ONE] = NEGATIVE_ONE // denotes program exited fully
+                    memory[OPERATION_POINTER_LOCATION] = OPERATION_POINTER_LOCATION // denotes program exited fully
                     return memory
                 }
                 else -> {
@@ -100,7 +102,7 @@ object ProcessorUtil {
         }
     }
 
-    fun hasProgramFinished(memory: MutableMap<BigInteger, BigInteger>) = memory[NEGATIVE_ONE] == NEGATIVE_ONE
+    fun hasProgramFinished(memory: MutableMap<BigInteger, BigInteger>) = memory[OPERATION_POINTER_LOCATION] == OPERATION_POINTER_LOCATION
 
     private fun processModes(modes: String, valueCount: Int): String {
         var newModes = modes
@@ -161,7 +163,7 @@ object ProcessorUtil {
         relativeBase: BigInteger,
         condition: (firstValue: BigInteger) -> Boolean
     ): BigInteger {
-        val currentModes = processModes(modes, 3)
+        val currentModes = processModes(modes, 2)
         val values = read2(memory, operationPointer)
         val firstValue = readValue(memory, currentModes[0], values.first, relativeBase)
         return if (condition(firstValue)) {
