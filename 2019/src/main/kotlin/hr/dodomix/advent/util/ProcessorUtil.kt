@@ -102,7 +102,8 @@ object ProcessorUtil {
         }
     }
 
-    fun hasProgramFinished(memory: MutableMap<BigInteger, BigInteger>) = memory[OPERATION_POINTER_LOCATION] == OPERATION_POINTER_LOCATION
+    fun hasProgramFinished(memory: MutableMap<BigInteger, BigInteger>) =
+        memory[OPERATION_POINTER_LOCATION] == OPERATION_POINTER_LOCATION
 
     private fun processModes(modes: String, valueCount: Int): String {
         var newModes = modes
