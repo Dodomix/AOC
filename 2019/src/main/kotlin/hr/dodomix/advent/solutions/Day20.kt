@@ -22,8 +22,6 @@ class Day20 {
                             portals[portal] = portals.getValue(portal) + Pair(i, j - 1)
                         } else if (rightMazeValue == '.') {
                             portals[portal] = portals.getValue(portal) + Pair(i, j + 2)
-                        } else {
-                            throw RuntimeException("wtf")
                         }
                         grid[Pair(i, j)] = portal
                         grid[Pair(i, j + 1)] = portal
@@ -35,8 +33,6 @@ class Day20 {
                             portals[portal] = portals.getValue(portal) + Pair(i - 1, j)
                         } else if (bottomMazeValue == '.') {
                             portals[portal] = portals.getValue(portal) + Pair(i + 2, j)
-                        } else {
-                            throw RuntimeException("wtf")
                         }
                         grid[Pair(i, j)] = portal
                         grid[Pair(i + 1, j)] = portal
@@ -46,10 +42,10 @@ class Day20 {
                 }
             }
         }
-        return bfs(grid, portals, portals.getValue("AA")[0])
+        return findExit(grid, portals, portals.getValue("AA")[0])
     }
 
-    private fun bfs(
+    private fun findExit(
         grid: MutableMap<Pair<Int, Int>, String>,
         portals: Map<String, List<Pair<Int, Int>>>,
         initialPosition: Pair<Int, Int>
@@ -61,7 +57,6 @@ class Day20 {
             val element = positions.removeAt(0)
             val position = element.first
             val distance = element.second
-            println("$position${grid[position]}$distance")
             if (position == lastPosition) return distance
             if (seenPositions.contains(position)) continue
             seenPositions.add(position)
@@ -80,53 +75,53 @@ class Day20 {
                         }, distance + 1
                     )
                 }.filter { !seenPositions.contains(it.first) }
-            println(newPositions)
             positions.addAll(newPositions)
         }
         return -1
     }
 
-    private fun bfs2(
+    private fun findExitWithLevels(
         grid: MutableMap<Pair<Int, Int>, String>,
-        portals: Map<String, List<Pair<Int, Int>>>,
+        portals: Map<String, List<Pair<Pair<Int, Int>, Boolean>>>,
         initialPosition: Pair<Int, Int>
     ): Int {
-        val positions = mutableListOf(Triple(initialPosition, 0, setOf<String>()))
-        val seenPositions = mutableSetOf<Pair<Pair<Int, Int>, Set<String>>>()
-        val lastPosition = portals.getValue("ZZ")[0]
+        val positions = mutableListOf(Triple(initialPosition, 0, 0))
+        val seenPositions = mutableSetOf<Pair<Pair<Int, Int>, Int>>()
+        val lastPosition = portals.getValue("ZZ")[0].first
         while (positions.isNotEmpty()) {
             val element = positions.removeAt(0)
             val position = element.first
             val distance = element.second
-            val visitedPortals = element.third
-            if (position == lastPosition && visitedPortals.isEmpty()) return distance
-            if (seenPositions.contains(Pair(position, visitedPortals))) continue
-            seenPositions.add(Pair(position, visitedPortals))
+            val level = element.third
+            if (position == lastPosition && level == 0) return distance
+            if (seenPositions.contains(Pair(position, level))) continue
+            seenPositions.add(Pair(position, level))
             val newPositions = listOf(
                 Pair(position.first + 1, position.second),
                 Pair(position.first - 1, position.second),
                 Pair(position.first, position.second + 1),
                 Pair(position.first, position.second - 1)
-            ).filter { grid[it] != " " && grid[it] != "#" && grid[it] != "AA" && (grid[it] != "ZZ" || visitedPortals.isEmpty()) }
+            ).filter { grid[it] != " " && grid[it] != "#" && grid[it] != "AA" && (grid[it] != "ZZ" || level == 0) }
                 .map { newPosition ->
-                    val nextPosition = if (grid.getValue(newPosition).any { it.isUpperCase() }) {
-                        portals.getValue(grid.getValue(newPosition)).find { it != position }!!
+                    val gridValue = grid.getValue(newPosition)
+                    val nextPosition = if (gridValue.any { it.isUpperCase() }) {
+                        portals.getValue(gridValue).find { it.first != position }!!
                     } else {
-                        newPosition
+                        Pair(newPosition, false)
                     }
-                    val nextVisitedPortals = if (grid.getValue(newPosition).any { it.isUpperCase() }) {
-                        if (visitedPortals.contains(grid.getValue(newPosition))) {
-                            visitedPortals - grid.getValue(newPosition)
+                    val nextLevel = if (gridValue.any { it.isUpperCase() }) {
+                        if (nextPosition.second) {
+                            level + 1
                         } else {
-                            visitedPortals + grid.getValue(newPosition)
+                            level - 1
                         }
                     } else {
-                        visitedPortals
+                        level
                     }
-                    Triple(
-                        nextPosition, distance + 1, visitedPortals
-                    )
-                }.filter { !seenPositions.contains(Pair(it.first, it.third)) }
+                    Triple(nextPosition.first, distance + 1, nextLevel)
+                }
+                .filter { !seenPositions.contains(Pair(it.first, it.third)) }
+                .filter { it.third >= 0 }
             positions.addAll(newPositions)
         }
         return -1
@@ -134,7 +129,7 @@ class Day20 {
 
     fun part2(input: List<String>): Any {
         val grid = mutableMapOf<Pair<Int, Int>, String>()
-        val portals = mutableMapOf<String, List<Pair<Int, Int>>>().withDefault { emptyList() }
+        val portals = mutableMapOf<String, List<Pair<Pair<Int, Int>, Boolean>>>().withDefault { emptyList() }
         for (i in input.indices) {
             val line = input[i]
             for (j in line.indices) {
@@ -147,11 +142,9 @@ class Day20 {
                         val rightMazeValue = line.getOrNull(j + 2)
                         val portal = "$value$rightValue"
                         if (leftMazeValue == '.') {
-                            portals[portal] = portals.getValue(portal) + Pair(i, j - 1)
+                            portals[portal] = portals.getValue(portal) + Pair(Pair(i, j - 1), rightMazeValue == null)
                         } else if (rightMazeValue == '.') {
-                            portals[portal] = portals.getValue(portal) + Pair(i, j + 2)
-                        } else {
-                            throw RuntimeException("wtf")
+                            portals[portal] = portals.getValue(portal) + Pair(Pair(i, j + 2), leftMazeValue == null)
                         }
                         grid[Pair(i, j)] = portal
                         grid[Pair(i, j + 1)] = portal
@@ -160,11 +153,9 @@ class Day20 {
                         val bottomMazeValue = input.getOrNull(i + 2)?.getOrNull(j)
                         val portal = "$value$bottomValue"
                         if (topMazeValue == '.') {
-                            portals[portal] = portals.getValue(portal) + Pair(i - 1, j)
+                            portals[portal] = portals.getValue(portal) + Pair(Pair(i - 1, j), bottomMazeValue == null)
                         } else if (bottomMazeValue == '.') {
-                            portals[portal] = portals.getValue(portal) + Pair(i + 2, j)
-                        } else {
-                            throw RuntimeException("wtf")
+                            portals[portal] = portals.getValue(portal) + Pair(Pair(i + 2, j), topMazeValue == null)
                         }
                         grid[Pair(i, j)] = portal
                         grid[Pair(i + 1, j)] = portal
@@ -174,6 +165,6 @@ class Day20 {
                 }
             }
         }
-        return bfs2(grid, portals, portals.getValue("AA")[0])
+        return findExitWithLevels(grid, portals, portals.getValue("AA")[0].first)
     }
 }
