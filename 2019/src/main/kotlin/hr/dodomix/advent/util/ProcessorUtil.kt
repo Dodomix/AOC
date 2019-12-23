@@ -11,6 +11,7 @@ object ProcessorUtil {
     private val FOUR = valueOf(4)
     private val OPERATION_POINTER_LOCATION = valueOf(Long.MIN_VALUE) - ONE
     private val RELATIVE_POINTER_LOCATION = valueOf(Long.MAX_VALUE) + ONE
+    private val EXIT_REASON_LOCATION = valueOf(Long.MAX_VALUE) + TWO
 
     fun constructMemory(input: List<String>): MutableMap<BigInteger, BigInteger> =
         input[0]
@@ -25,7 +26,9 @@ object ProcessorUtil {
         memory: MutableMap<BigInteger, BigInteger>,
         input: List<BigInteger> = emptyList(),
         output: MutableList<BigInteger> = mutableListOf(),
-        waitForInput: Boolean = false
+        waitForInput: Boolean = false,
+        stepByStep: Boolean = false,
+        debug: Boolean = false
     ): MutableMap<BigInteger, BigInteger> {
         var operationPointer = memory.getValue(OPERATION_POINTER_LOCATION)
         var inputIndex = 0
@@ -43,10 +46,13 @@ object ProcessorUtil {
                     operationPointer += FOUR
                 }
                 3 -> {
-                    println("Please input a value:")
+                    if (debug) {
+                        println("Please input a value:")
+                    }
                     if (waitForInput && inputIndex == input.size) {
                         memory[OPERATION_POINTER_LOCATION] = valueOf(operationPointer.toLong())
                         memory[RELATIVE_POINTER_LOCATION] = relativeBase
+                        memory[EXIT_REASON_LOCATION] = ONE
                         return memory
                     }
                     val valueRead = input.getOrElse(inputIndex++) { BigInteger(readLine()!!) }
@@ -58,7 +64,9 @@ object ProcessorUtil {
                     val currentModes = processModes(modes, 1)
                     val result = readValue(memory, currentModes[0], read1(memory, operationPointer), relativeBase)
                     output.add(result)
-                    println(result)
+                    if (debug) {
+                        println(result)
+                    }
                     operationPointer += TWO
                 }
                 5 -> {
@@ -99,11 +107,19 @@ object ProcessorUtil {
                     throw RuntimeException("Invalid code ${value % 100} at $operationPointer")
                 }
             }
+            if (stepByStep) {
+                memory[OPERATION_POINTER_LOCATION] = valueOf(operationPointer.toLong())
+                memory[RELATIVE_POINTER_LOCATION] = relativeBase
+                memory[EXIT_REASON_LOCATION] = TWO
+                return memory
+            }
         }
     }
 
     fun hasProgramFinished(memory: MutableMap<BigInteger, BigInteger>) =
         memory[OPERATION_POINTER_LOCATION] == OPERATION_POINTER_LOCATION
+
+    fun isWaitingForInput(memory: MutableMap<BigInteger, BigInteger>) = memory[EXIT_REASON_LOCATION] == ONE
 
     private fun processModes(modes: String, valueCount: Int): String {
         var newModes = modes
