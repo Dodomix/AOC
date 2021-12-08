@@ -7,6 +7,7 @@ import hr.dodomix.advent.solutions.Day4
 import hr.dodomix.advent.solutions.Day5
 import hr.dodomix.advent.solutions.Day6
 import hr.dodomix.advent.solutions.Day7
+import hr.dodomix.advent.solutions.Day8
 import hr.dodomix.advent.util.Util
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -121,6 +122,22 @@ class Tests {
         fun part2() {
             assertThat(day.part2(Util.readFileLines("${day.dayDirectory()}/test-input1")))
                 .isEqualTo(168)
+        }
+    }
+
+    internal class Day8Test {
+        private val day = Day8()
+
+        @Test
+        fun part1() {
+            assertThat(day.part1(Util.readFileLines("${day.dayDirectory()}/test-input1")))
+                .isEqualTo(26)
+        }
+
+        @Test
+        fun part2() {
+            assertThat(day.part2(Util.readFileLines("${day.dayDirectory()}/test-input1")))
+                .isEqualTo(61229)
         }
     }
 }
