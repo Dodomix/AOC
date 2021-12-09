@@ -10,4 +10,9 @@ object Util {
             ?.lines()
             ?: throw FileNotFoundException("Cannot find file $file in inputs")
     }
+
+    fun CharSequence.splitIgnoreEmpty(vararg delimiters: String): List<String> =
+        this.split(*delimiters).filter {
+            it.isNotEmpty()
+        }
 }
