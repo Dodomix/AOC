@@ -15,4 +15,6 @@ object Util {
         this.split(*delimiters).filter {
             it.isNotEmpty()
         }
+
+    data class Location(val row: Int, val column: Int)
 }
