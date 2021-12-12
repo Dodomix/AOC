@@ -14,10 +14,13 @@ import hr.dodomix.advent.solutions.Day8
 import hr.dodomix.advent.solutions.Day9
 import hr.dodomix.advent.util.Util
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
+
 class Tests {
-    internal class Day1Test {
+    @Nested
+    inner class Day1Test {
         private val day = Day1()
 
         @Test
@@ -33,7 +36,8 @@ class Tests {
         }
     }
 
-    internal class Day2Test {
+    @Nested
+    inner class Day2Test {
         private val day = Day2()
 
         @Test
@@ -49,7 +53,8 @@ class Tests {
         }
     }
 
-    internal class Day3Test {
+    @Nested
+    inner class Day3Test {
         private val day = Day3()
 
         @Test
@@ -65,7 +70,8 @@ class Tests {
         }
     }
 
-    internal class Day4Test {
+    @Nested
+    inner class Day4Test {
         private val day = Day4()
 
         @Test
@@ -81,7 +87,8 @@ class Tests {
         }
     }
 
-    internal class Day5Test {
+    @Nested
+    inner class Day5Test {
         private val day = Day5()
 
         @Test
@@ -97,7 +104,8 @@ class Tests {
         }
     }
 
-    internal class Day6Test {
+    @Nested
+    inner class Day6Test {
         private val day = Day6()
 
         @Test
@@ -113,7 +121,8 @@ class Tests {
         }
     }
 
-    internal class Day7Test {
+    @Nested
+    inner class Day7Test {
         private val day = Day7()
 
         @Test
@@ -129,7 +138,8 @@ class Tests {
         }
     }
 
-    internal class Day8Test {
+    @Nested
+    inner class Day8Test {
         private val day = Day8()
 
         @Test
@@ -145,7 +155,8 @@ class Tests {
         }
     }
 
-    internal class Day9Test {
+    @Nested
+    inner class Day9Test {
         private val day = Day9()
 
         @Test
@@ -161,7 +172,8 @@ class Tests {
         }
     }
 
-    internal class Day10Test {
+    @Nested
+    inner class Day10Test {
         private val day = Day10()
 
         @Test
@@ -177,7 +189,8 @@ class Tests {
         }
     }
 
-    internal class Day11Test {
+    @Nested
+    inner class Day11Test {
         private val day = Day11()
 
         @Test
@@ -193,7 +206,8 @@ class Tests {
         }
     }
 
-    internal class Day12Test {
+    @Nested
+    inner class Day12Test {
         private val day = Day12()
 
         @Test
