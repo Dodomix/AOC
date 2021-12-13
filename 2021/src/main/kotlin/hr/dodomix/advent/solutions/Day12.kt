@@ -15,7 +15,6 @@ class Day12 {
         return visitNodeMultiple(nodeMap.getValue("start"), emptyMap())
     }
 
-
     private fun constructNodeMap(input: List<String>): Map<String, Node> {
         val nodeMap = input.fold(mapOf<String, Node>()) { nodes, line ->
             val (nameNode1, nameNode2) = line.split("-")
