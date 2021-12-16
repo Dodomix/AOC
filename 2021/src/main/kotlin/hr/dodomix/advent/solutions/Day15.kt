@@ -5,8 +5,6 @@ import hr.dodomix.advent.util.Util.Location
 class Day15 {
     fun dayDirectory() = "day15"
 
-    private val fullLocationRisk = mutableMapOf<Location, Int>()
-
     fun part1(input: List<String>): Int {
         val cave = parseInput(input)
         return buildFullRiskMap(cave).getValue(Location(cave.maxOf { it.key.row }, cave.maxOf { it.key.column }))
