@@ -8,6 +8,7 @@ import hr.dodomix.advent.solutions.Day13
 import hr.dodomix.advent.solutions.Day14
 import hr.dodomix.advent.solutions.Day15
 import hr.dodomix.advent.solutions.Day16
+import hr.dodomix.advent.solutions.Day17
 import hr.dodomix.advent.solutions.Day2
 import hr.dodomix.advent.solutions.Day3
 import hr.dodomix.advent.solutions.Day4
@@ -304,6 +305,23 @@ class Tests {
         fun part2(input: String, result: Int) {
             assertThat(day.part2(listOf(input)))
                 .isEqualTo(result)
+        }
+    }
+
+    @Nested
+    inner class Day17Test {
+        private val day = Day17()
+
+        @Test
+        fun part1() {
+            assertThat(day.part1(Util.readFileLines("${day.dayDirectory()}/test-input1")))
+                .isEqualTo(45)
+        }
+
+        @Test
+        fun part2() {
+            assertThat(day.part2(Util.readFileLines("${day.dayDirectory()}/test-input1")))
+                .isEqualTo(112)
         }
     }
 }
