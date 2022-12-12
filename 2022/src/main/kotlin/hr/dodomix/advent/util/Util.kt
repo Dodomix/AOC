@@ -10,4 +10,6 @@ object Util {
             ?.lines()
             ?: throw FileNotFoundException("Cannot find file $file in inputs")
     }
+
+    data class Position(val row: Int, val column: Int)
 }

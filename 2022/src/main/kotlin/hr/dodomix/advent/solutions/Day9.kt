@@ -1,5 +1,7 @@
 package hr.dodomix.advent.solutions
 
+import hr.dodomix.advent.util.Util.Position
+
 class Day9 {
     fun dayDirectory() = "day9"
 
@@ -81,8 +83,6 @@ class Day9 {
         newPosition1.column - oldPosition2.column == -2 -> Position(newPosition1.row, oldPosition2.column - 1)
         else -> oldPosition2
     }
-
-    data class Position(val row: Int, val column: Int)
 
     data class State(val positions: Set<Position>, val head: Position, val tail: Position)
     data class State2(val positions: Set<Position>, val head: Position, val tails: List<Position>)
