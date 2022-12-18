@@ -18,4 +18,13 @@ object Util {
     data class LongPosition(val row: Long, val column: Long) {
         fun translate(position: LongPosition) = LongPosition(row + position.row, column + position.column)
     }
+
+    data class Position3D(val x: Long, val y: Long, val z: Long) {
+        companion object {
+            fun fromString(line: String): Position3D {
+                val (x, y, z) = line.split(",").map { it.toLong() }
+                return Position3D(x, y, z)
+            }
+        }
+    }
 }
