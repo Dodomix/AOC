@@ -335,4 +335,15 @@ class Tests {
                 .isEqualTo(1623178306L)
         }
     }
+
+    @Nested
+    inner class Day21Test {
+        private val day = Day21()
+
+        @Test
+        fun part1() {
+            assertThat(day.part1(Util.readFileLines("${day.dayDirectory()}/test-input1")))
+                .isEqualTo(152)
+        }
+    }
 }
